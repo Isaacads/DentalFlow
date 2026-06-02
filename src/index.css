@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "DM Sans";
+  --background: 210 40% 98%;
+  --foreground: 215 28% 17%;
+  --card: 0 0% 100%;
+  --card-foreground: 215 28% 17%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 215 28% 17%;
+  --primary: 210 52% 25%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 215 28% 17%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 160 84% 39%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 210 52% 25%;
+  --success: 160 84% 39%;
+  --warning: 38 92% 50%;
+  --radius: 12px;
+}
+
+.dark {
+  --background: 215 28% 10%;
+  --foreground: 210 40% 98%;
+  --card: 215 28% 12%;
+  --card-foreground: 210 40% 98%;
+  --popover: 215 28% 12%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 210 52% 25%;
+  --secondary: 215 26% 18%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 215 26% 18%;
+  --muted-foreground: 215 20% 70%;
+  --accent: 160 84% 39%;
+  --accent-foreground: 215 28% 10%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 215 26% 20%;
+  --input: 215 26% 20%;
+  --ring: 210 40% 98%;
+  --success: 160 84% 39%;
+  --warning: 38 92% 50%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans), system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
