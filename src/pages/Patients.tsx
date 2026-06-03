@@ -152,8 +152,8 @@ export function Patients() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Paciente</TableHead>
-                  <TableHead>CPF</TableHead>
-                  <TableHead>Contato</TableHead>
+                  <TableHead className="hidden md:table-cell">CPF</TableHead>
+                  <TableHead className="hidden sm:table-cell">Contato</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -178,8 +178,8 @@ export function Patients() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{p.cpf ?? "—"}</TableCell>
-                    <TableCell className="text-sm">{p.whatsapp ?? p.phone ?? "—"}</TableCell>
+                    <TableCell className="hidden font-mono text-xs md:table-cell">{p.cpf ?? "—"}</TableCell>
+                    <TableCell className="hidden text-sm sm:table-cell">{p.whatsapp ?? p.phone ?? "—"}</TableCell>
                     <TableCell>{p.active ? <Badge variant="success">Ativo</Badge> : <Badge variant="secondary">Inativo</Badge>}</TableCell>
                     <TableCell className="text-right">
                       {canWrite ? (

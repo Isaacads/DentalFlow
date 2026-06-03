@@ -188,8 +188,8 @@ export function TeamPage() {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Função</TableHead>
-                  <TableHead>Especialidade</TableHead>
-                  <TableHead>Contato</TableHead>
+                  <TableHead className="hidden lg:table-cell">Especialidade</TableHead>
+                  <TableHead className="hidden md:table-cell">Contato</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -199,8 +199,8 @@ export function TeamPage() {
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.full_name ?? p.id}</TableCell>
                     <TableCell>{roles.find((r) => r.value === p.role)?.label ?? p.role}</TableCell>
-                    <TableCell>{p.specialty ?? "—"}</TableCell>
-                    <TableCell>{p.phone ?? "—"}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{p.specialty ?? "—"}</TableCell>
+                    <TableCell className="hidden md:table-cell">{p.phone ?? "—"}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap items-center gap-2">
                         {p.active ? <Badge variant="success">Ativo</Badge> : <Badge variant="secondary">Inativo</Badge>}

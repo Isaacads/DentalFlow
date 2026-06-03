@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Outlet, useNavigate } from "react-router-dom"
+import { Outlet, useLocation, useNavigate } from "react-router-dom"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { Topbar } from "@/components/layout/Topbar"
 import { GlobalSearch } from "@/components/search/GlobalSearch"
@@ -8,7 +8,14 @@ import { Spinner } from "@/components/ui/spinner"
 export function AppShell() {
   const [collapsed, setCollapsed] = React.useState<boolean>(() => localStorage.getItem("dentalflow.sidebar") === "collapsed")
   const [openSearch, setOpenSearch] = React.useState(false)
+  const [mobileOpen, setMobileOpen] = React.useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Fecha o drawer ao trocar de rota (mobile)
+  React.useEffect(() => {
+    setMobileOpen(false)
+  }, [location.pathname])
 
   React.useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -33,9 +40,14 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-dvh bg-background">
-      <Sidebar collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
+      <Sidebar
+        collapsed={collapsed}
+        onToggleCollapsed={toggleCollapsed}
+        mobileOpen={mobileOpen}
+        onCloseMobile={() => setMobileOpen(false)}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar onOpenSearch={() => setOpenSearch(true)} />
+        <Topbar onOpenSearch={() => setOpenSearch(true)} onOpenMobileMenu={() => setMobileOpen(true)} />
         <main className="min-w-0 flex-1 p-4 sm:p-6">
           <React.Suspense
             fallback={

@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Stethoscope,
   Users,
+  X,
 } from "lucide-react"
 import logoDentalFlow from "@/assets/logoDentalFlow.png"
 import { supabase } from "@/lib/supabase"
@@ -37,9 +38,13 @@ const navItems: NavItem[] = [
 export function Sidebar({
   collapsed,
   onToggleCollapsed,
+  mobileOpen = false,
+  onCloseMobile,
 }: {
   collapsed: boolean
   onToggleCollapsed: () => void
+  mobileOpen?: boolean
+  onCloseMobile?: () => void
 }) {
   const { profile } = useAuth()
   const { planTier } = useAuth()
@@ -87,30 +92,44 @@ export function Sidebar({
 
   return (
     <TooltipProvider>
+      {/* Backdrop só no mobile, quando o drawer está aberto */}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity lg:hidden",
+          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+        aria-hidden="true"
+        onClick={onCloseMobile}
+      />
       <aside
         className={cn(
-          "sticky top-0 flex h-dvh shrink-0 flex-col border-r bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/40",
-          collapsed ? "w-[72px]" : "w-[272px]",
+          "fixed inset-y-0 left-0 z-50 flex h-dvh w-[272px] shrink-0 flex-col border-r bg-card shadow-xl transition-transform duration-200 ease-in-out",
+          "lg:sticky lg:top-0 lg:z-30 lg:bg-card/60 lg:shadow-none lg:backdrop-blur lg:supports-[backdrop-filter]:bg-card/40 lg:transition-[width]",
+          collapsed ? "lg:w-[72px]" : "lg:w-[272px]",
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
         <div className="flex items-center gap-1 px-4 py-4">
           <div className="flex items-center">
             <img src={brandLogo} alt={brandName} className="h-12 w-12 shrink-0" />
           </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <div className="truncate text-base font-semibold leading-tight">{brandName}</div>
-              <div className="truncate text-xs text-muted-foreground">{brandSlogan}</div>
-            </div>
-          )}
-          <div className="ml-auto">
-            <Button variant="ghost" size="icon" onClick={onToggleCollapsed} aria-label="Alternar sidebar">
+          <div className={cn("min-w-0", collapsed && "lg:hidden")}>
+            <div className="truncate text-base font-semibold leading-tight">{brandName}</div>
+            <div className="truncate text-xs text-muted-foreground">{brandSlogan}</div>
+          </div>
+          <div className="ml-auto flex items-center">
+            {/* Fechar drawer (mobile) */}
+            <Button variant="ghost" size="icon" className="lg:hidden" onClick={onCloseMobile} aria-label="Fechar menu">
+              <X className="h-4 w-4" />
+            </Button>
+            {/* Recolher/expandir (desktop) */}
+            <Button variant="ghost" size="icon" className="hidden lg:inline-flex" onClick={onToggleCollapsed} aria-label="Alternar sidebar">
               {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </Button>
           </div>
         </div>
 
-        <nav className="flex-1 px-2 py-2">
+        <nav className="flex-1 overflow-y-auto px-2 py-2">
           <ul className="grid gap-1">
             {visibleNavItems.map((item) => {
               const Icon = item.icon
@@ -118,16 +137,17 @@ export function Sidebar({
                 <NavLink
                   to={item.to}
                   end={item.to === "/app"}
+                  onClick={onCloseMobile}
                   className={({ isActive }) =>
                     cn(
                       "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                       isActive ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
-                      collapsed && "justify-center px-2",
+                      collapsed && "lg:justify-center lg:px-2",
                     )
                   }
                 >
-                  <Icon className="h-4 w-4" />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className={cn("truncate", collapsed && "lg:hidden")}>{item.label}</span>
                 </NavLink>
               )
 
@@ -136,7 +156,9 @@ export function Sidebar({
                   {collapsed ? (
                     <Tooltip>
                       <TooltipTrigger asChild>{link}</TooltipTrigger>
-                      <TooltipContent side="right">{item.label}</TooltipContent>
+                      <TooltipContent side="right" className="hidden lg:block">
+                        {item.label}
+                      </TooltipContent>
                     </Tooltip>
                   ) : (
                     link
@@ -147,16 +169,13 @@ export function Sidebar({
           </ul>
         </nav>
 
-        <div className={cn("border-t p-3", collapsed && "px-2")}>
-          {collapsed ? (
-            <div className={cn("text-xs text-muted-foreground", collapsed && "text-center")}>AMMI</div>
-          ) : (
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span>v1</span>
-              <span>AMMI-Tech</span>
-              <span>ammisoftware@outlook.com</span>
-            </div>
-          )}
+        <div className={cn("border-t p-3", collapsed && "lg:px-2")}>
+          <div className={cn("text-center text-xs text-muted-foreground", collapsed ? "hidden lg:block" : "hidden")}>AMMI</div>
+          <div className={cn("flex flex-wrap items-center gap-2 text-xs text-muted-foreground", collapsed && "lg:hidden")}>
+            <span>v1</span>
+            <span>AMMI-Tech</span>
+            <span>ammisoftware@outlook.com</span>
+          </div>
         </div>
       </aside>
     </TooltipProvider>

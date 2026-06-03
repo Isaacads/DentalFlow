@@ -135,8 +135,8 @@ export function ProceduresPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  <TableHead>Categoria</TableHead>
-                  <TableHead>Duração</TableHead>
+                  <TableHead className="hidden md:table-cell">Categoria</TableHead>
+                  <TableHead className="hidden sm:table-cell">Duração</TableHead>
                   <TableHead>Preço base</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -146,8 +146,8 @@ export function ProceduresPage() {
                 {pageItems.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.name}</TableCell>
-                    <TableCell>{p.category ?? "—"}</TableCell>
-                    <TableCell>{p.duration_minutes ? `${p.duration_minutes} min` : "—"}</TableCell>
+                    <TableCell className="hidden md:table-cell">{p.category ?? "—"}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{p.duration_minutes ? `${p.duration_minutes} min` : "—"}</TableCell>
                     <TableCell>{p.base_price != null ? formatMoneyBRL(Number(p.base_price)) : "—"}</TableCell>
                     <TableCell>{p.active ? <Badge variant="success">Ativo</Badge> : <Badge variant="secondary">Inativo</Badge>}</TableCell>
                     <TableCell className="text-right">

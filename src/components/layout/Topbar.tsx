@@ -1,5 +1,5 @@
 import * as React from "react"
-import { LogOut, Moon, Search, Sun, UserRound } from "lucide-react"
+import { LogOut, Menu, Moon, Search, Sun, UserRound } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/providers/AuthProvider"
 import { useTheme } from "@/hooks/useTheme"
@@ -47,7 +47,7 @@ function getErrorMessage(err: unknown) {
   return "Erro desconhecido."
 }
 
-export function Topbar({ onOpenSearch }: { onOpenSearch: () => void }) {
+export function Topbar({ onOpenSearch, onOpenMobileMenu }: { onOpenSearch: () => void; onOpenMobileMenu?: () => void }) {
   const { user, profile, signOut } = useAuth()
   const { theme, toggle } = useTheme()
   const [accountOpen, setAccountOpen] = React.useState(false)
@@ -118,6 +118,9 @@ export function Topbar({ onOpenSearch }: { onOpenSearch: () => void }) {
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/50">
+      <Button variant="ghost" size="icon" className="lg:hidden" onClick={onOpenMobileMenu} aria-label="Abrir menu">
+        <Menu className="h-5 w-5" />
+      </Button>
       <div className="flex-1" />
       <Button variant="outline" className="hidden gap-2 sm:inline-flex" onClick={onOpenSearch}>
         <Search className="h-4 w-4" />

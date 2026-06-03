@@ -285,8 +285,8 @@ export function Financial() {
                 <TableRow>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Paciente</TableHead>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead>Vencimento</TableHead>
+                  <TableHead className="hidden lg:table-cell">Descrição</TableHead>
+                  <TableHead className="hidden md:table-cell">Vencimento</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -297,8 +297,8 @@ export function Financial() {
                   <TableRow key={t.id}>
                     <TableCell>{t.type === "income" ? <Badge variant="success">Receita</Badge> : <Badge variant="secondary">Despesa</Badge>}</TableCell>
                     <TableCell className="text-sm">{t.patient?.name ?? "—"}</TableCell>
-                    <TableCell className="text-sm">{t.description ?? t.category ?? "—"}</TableCell>
-                    <TableCell className="text-sm">{t.due_date ?? "—"}</TableCell>
+                    <TableCell className="hidden text-sm lg:table-cell">{t.description ?? t.category ?? "—"}</TableCell>
+                    <TableCell className="hidden text-sm md:table-cell">{t.due_date ?? "—"}</TableCell>
                     <TableCell>
                       {t.status === "paid" ? (
                         <Badge variant="success">Pago</Badge>
@@ -602,9 +602,9 @@ export function FinancialReportPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>
-                  <TableHead>Tipo</TableHead>
+                  <TableHead className="hidden sm:table-cell">Tipo</TableHead>
                   <TableHead>Paciente</TableHead>
-                  <TableHead>Descrição</TableHead>
+                  <TableHead className="hidden lg:table-cell">Descrição</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
                 </TableRow>
@@ -613,9 +613,9 @@ export function FinancialReportPage() {
                 {rows.map((t) => (
                   <TableRow key={t.id}>
                     <TableCell className="text-sm">{String(t.created_at ?? "").slice(0, 10).split("-").reverse().join("/")}</TableCell>
-                    <TableCell>{t.type === "income" ? "Receita" : "Despesa"}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{t.type === "income" ? "Receita" : "Despesa"}</TableCell>
                     <TableCell className="text-sm">{t.patient?.name ?? "—"}</TableCell>
-                    <TableCell className="text-sm">{t.description ?? t.category ?? "—"}</TableCell>
+                    <TableCell className="hidden text-sm lg:table-cell">{t.description ?? t.category ?? "—"}</TableCell>
                     <TableCell className="text-sm">
                       {t.status === "paid" ? "Pago" : t.status === "overdue" ? "Vencido" : t.status === "pending" ? "Pendente" : "Cancelado"}
                     </TableCell>
