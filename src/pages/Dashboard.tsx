@@ -43,7 +43,7 @@ function statusBadge(status: Appointment["status"]) {
 }
 
 export function Dashboard() {
-  const { planTier } = useAuth()
+  const { planTier, paymentStatus } = useAuth()
   const canFinance = planAllows(planTier, "financeiro")
   const canReturns = planAllows(planTier, "retornos")
   const [loading, setLoading] = React.useState(true)
@@ -190,6 +190,15 @@ export function Dashboard() {
 
   return (
     <div className="grid gap-6">
+      {paymentStatus === "past_due" ? (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
+          <div className="text-sm font-semibold">Não conseguimos processar sua última cobrança</div>
+          <div className="mt-1 text-sm text-destructive/90">
+            Identificamos uma falha no pagamento da sua assinatura. Seu acesso continua liberado, mas pedimos que regularize o
+            pagamento para evitar interrupções. Verifique os dados do seu cartão ou tente novamente em alguns instantes.
+          </div>
+        </div>
+      ) : null}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="pb-3">

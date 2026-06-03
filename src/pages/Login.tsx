@@ -65,7 +65,16 @@ export function Login() {
 
   const authType = React.useMemo(() => getAuthHashType(location.hash), [location.hash])
   const isPasswordFlow = authType === "recovery" || authType === "invite"
+  const isWelcome = React.useMemo(() => new URLSearchParams(location.search).get("welcome") === "1", [location.search])
+  const welcomeToastShown = React.useRef(false)
   const from = (location.state as { from?: string } | null)?.from
+
+  React.useEffect(() => {
+    if (isWelcome && !welcomeToastShown.current) {
+      welcomeToastShown.current = true
+      toast.success("Compra concluída! Enviamos um e-mail com os seus dados de acesso.")
+    }
+  }, [isWelcome])
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -134,6 +143,16 @@ export function Login() {
             </div>
           </CardHeader>
           <CardContent>
+            {isWelcome && !isPasswordFlow ? (
+              <div className="mb-4 rounded-lg border border-primary/40 bg-primary/10 p-3 text-sm">
+                <div className="font-semibold text-primary">Parabéns pela sua compra!</div>
+                <div className="mt-1 text-muted-foreground">
+                  Sua assinatura foi confirmada. Enviamos um e-mail com a confirmação e os seus dados de acesso. Use o e-mail
+                  da compra para entrar; a senha inicial é o número do seu documento (CPF ou CNPJ, sem pontuação), que você
+                  pode alterar depois.
+                </div>
+              </div>
+            ) : null}
             {isPasswordFlow ? (
               <form className="grid gap-4" onSubmit={passwordForm.handleSubmit(onSetPassword)}>
                 <div className="rounded-lg border bg-secondary/30 p-3 text-sm text-muted-foreground">

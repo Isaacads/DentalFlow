@@ -4,6 +4,8 @@ export type ProfileRole = "admin" | "dentist" | "receptionist" | "assistant"
 
 export type PlanTier = "essential" | "clinic" | "management"
 
+export type PaymentStatus = "active" | "past_due"
+
 export type BookingMode = "request" | "auto"
 
 export type AppointmentStatus = "scheduled" | "confirmed" | "completed" | "cancelled" | "no_show"
@@ -45,6 +47,9 @@ export type Clinic = {
   name: string
   owner_id: string
   plan_tier: PlanTier
+  billing_provider: string | null
+  billing_subscription_id: string | null
+  payment_status: PaymentStatus
   booking_enabled: boolean
   booking_slug: string
   booking_window_days: number
@@ -251,6 +256,9 @@ export type Database = {
           name: string
           owner_id?: string
           plan_tier?: PlanTier
+          billing_provider?: string | null
+          billing_subscription_id?: string | null
+          payment_status?: PaymentStatus
           booking_enabled?: boolean
           booking_slug?: string
           booking_window_days?: number
@@ -280,6 +288,9 @@ export type Database = {
           name?: string
           owner_id?: string
           plan_tier?: PlanTier
+          billing_provider?: string | null
+          billing_subscription_id?: string | null
+          payment_status?: PaymentStatus
           booking_enabled?: boolean
           booking_slug?: string
           booking_window_days?: number
@@ -886,6 +897,21 @@ export type Database = {
       bootstrap_clinic: {
         Args: { p_clinic_name: string; p_full_name: string }
         Returns: string
+      }
+      provision_paid_clinic: {
+        Args: {
+          p_user_id: string
+          p_clinic_name: string
+          p_full_name: string
+          p_plan_tier: string
+          p_billing_provider: string | null
+          p_billing_subscription_id: string | null
+        }
+        Returns: string
+      }
+      set_clinic_payment_status_by_subscription: {
+        Args: { p_billing_subscription_id: string; p_status: string }
+        Returns: null
       }
       create_rsvp_token: {
         Args: { p_appointment_id: string; p_hours?: number }

@@ -1,7 +1,7 @@
 import * as React from "react"
 import type { Session, User } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
-import type { PlanTier, Profile, ProfileRole } from "@/types/database"
+import type { PaymentStatus, PlanTier, Profile, ProfileRole } from "@/types/database"
 
 const PROFILE_CACHE_KEY = "dentalflow.profile_cache_v1"
 
@@ -11,6 +11,7 @@ type AuthState = {
   profile: Profile | null
   isOwner: boolean
   planTier: PlanTier
+  paymentStatus: PaymentStatus
   loading: boolean
 }
 
@@ -19,6 +20,7 @@ type ProfileCache = {
   profile: Profile
   isOwner: boolean
   planTier: PlanTier
+  paymentStatus: PaymentStatus
   savedAt: string
 }
 
@@ -50,10 +52,10 @@ async function fetchProfile(userId: string) {
   return (data ?? null) as Profile | null
 }
 
-type ProfileWithClinic = Profile & { clinic?: { owner_id?: string | null; plan_tier?: string | null } | null }
+type ProfileWithClinic = Profile & { clinic?: { owner_id?: string | null; plan_tier?: string | null; payment_status?: string | null } | null }
 
 async function fetchProfileWithClinic(userId: string) {
-  const { data, error } = await supabase.from("profiles").select("*, clinic:clinics(owner_id, plan_tier)").eq("id", userId).maybeSingle()
+  const { data, error } = await supabase.from("profiles").select("*, clinic:clinics(owner_id, plan_tier, payment_status)").eq("id", userId).maybeSingle()
   if (error) throw error
   return (data ?? null) as ProfileWithClinic | null
 }
@@ -62,6 +64,12 @@ function normalizePlanTier(value: unknown): PlanTier {
   const tier = String(value ?? "essential")
   if (tier === "clinic" || tier === "management" || tier === "essential") return tier
   return "essential"
+}
+
+function normalizePaymentStatus(value: unknown): PaymentStatus {
+  const status = String(value ?? "active")
+  if (status === "past_due") return "past_due"
+  return "active"
 }
 
 function readProfileCache(userId: string) {
@@ -74,15 +82,16 @@ function readProfileCache(userId: string) {
     const savedAt = typeof parsed.savedAt === "string" ? Date.parse(parsed.savedAt) : NaN
     if (!Number.isFinite(savedAt) || Date.now() - savedAt > 24 * 60 * 60 * 1000) return null
     const planTier = normalizePlanTier(parsed.planTier)
-    return { profile: parsed.profile as Profile, isOwner: Boolean(parsed.isOwner), planTier }
+    const paymentStatus = normalizePaymentStatus(parsed.paymentStatus)
+    return { profile: parsed.profile as Profile, isOwner: Boolean(parsed.isOwner), planTier, paymentStatus }
   } catch {
     return null
   }
 }
 
-function writeProfileCache(userId: string, profile: Profile, isOwner: boolean, planTier: PlanTier) {
+function writeProfileCache(userId: string, profile: Profile, isOwner: boolean, planTier: PlanTier, paymentStatus: PaymentStatus) {
   try {
-    const payload: ProfileCache = { userId, profile, isOwner, planTier, savedAt: new Date().toISOString() }
+    const payload: ProfileCache = { userId, profile, isOwner, planTier, paymentStatus, savedAt: new Date().toISOString() }
     localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(payload))
   } catch {
     return
@@ -104,56 +113,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile: null,
     isOwner: false,
     planTier: "essential",
+    paymentStatus: "active",
     loading: true,
   })
 
   const lastProfileRef = React.useRef<Profile | null>(null)
   const lastIsOwnerRef = React.useRef(false)
   const lastPlanTierRef = React.useRef<PlanTier>("essential")
+  const lastPaymentStatusRef = React.useRef<PaymentStatus>("active")
 
   React.useEffect(() => {
     lastProfileRef.current = state.profile
     lastIsOwnerRef.current = state.isOwner
     lastPlanTierRef.current = state.planTier
-  }, [state.isOwner, state.planTier, state.profile])
+    lastPaymentStatusRef.current = state.paymentStatus
+  }, [state.isOwner, state.planTier, state.paymentStatus, state.profile])
 
   React.useEffect(() => {
     if (!state.user?.id) return
     if (!state.profile) return
-    writeProfileCache(state.user.id, state.profile, state.isOwner, state.planTier)
-  }, [state.isOwner, state.planTier, state.profile, state.user?.id])
+    writeProfileCache(state.user.id, state.profile, state.isOwner, state.planTier, state.paymentStatus)
+  }, [state.isOwner, state.planTier, state.paymentStatus, state.profile, state.user?.id])
 
   const refreshProfile = React.useCallback(async () => {
     const user = state.user
     if (!user) {
-      setState((s) => ({ ...s, profile: null, isOwner: false, planTier: "essential" }))
+      setState((s) => ({ ...s, profile: null, isOwner: false, planTier: "essential", paymentStatus: "active" }))
       return
     }
     try {
       const isOwnerFallback = lastProfileRef.current?.id === user.id ? lastIsOwnerRef.current : false
       const planTierFallback = lastProfileRef.current?.id === user.id ? lastPlanTierRef.current : "essential"
+      const paymentStatusFallback = lastProfileRef.current?.id === user.id ? lastPaymentStatusRef.current : "active"
       let profile: Profile | null = null
       let isOwner = isOwnerFallback
       let planTier: PlanTier = planTierFallback
+      let paymentStatus: PaymentStatus = paymentStatusFallback
       try {
         const p = await withTimeout(fetchProfileWithClinic(user.id), 8000)
         profile = p as Profile | null
         if (p?.clinic_id) {
           isOwner = String(p.clinic?.owner_id ?? "") === String(user.id)
           planTier = normalizePlanTier(p.clinic?.plan_tier ?? planTierFallback)
+          paymentStatus = normalizePaymentStatus(p.clinic?.payment_status ?? paymentStatusFallback)
         }
       } catch {
         profile = await fetchProfile(user.id)
       }
-      setState((s) => ({ ...s, profile, isOwner, planTier }))
+      setState((s) => ({ ...s, profile, isOwner, planTier, paymentStatus }))
     } catch {
       const cached = readProfileCache(user.id)
       if (cached?.profile) {
-        setState((s) => ({ ...s, profile: cached.profile, isOwner: cached.isOwner, planTier: cached.planTier }))
+        setState((s) => ({ ...s, profile: cached.profile, isOwner: cached.isOwner, planTier: cached.planTier, paymentStatus: cached.paymentStatus }))
         return
       }
       if (lastProfileRef.current?.id === user.id && lastProfileRef.current) {
-        setState((s) => ({ ...s, profile: lastProfileRef.current, isOwner: lastIsOwnerRef.current, planTier: lastPlanTierRef.current }))
+        setState((s) => ({ ...s, profile: lastProfileRef.current, isOwner: lastIsOwnerRef.current, planTier: lastPlanTierRef.current, paymentStatus: lastPaymentStatusRef.current }))
         return
       }
       setState((s) => ({ ...s }))
@@ -175,7 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const user = session?.user ?? null
       const cached = user ? readProfileCache(user.id) : null
       if (user && cached?.profile) {
-        setState((s) => ({ ...s, session, user, profile: cached.profile, isOwner: cached.isOwner, planTier: cached.planTier, loading: false }))
+        setState((s) => ({ ...s, session, user, profile: cached.profile, isOwner: cached.isOwner, planTier: cached.planTier, paymentStatus: cached.paymentStatus, loading: false }))
       }
 
       let profile!: Profile | null
@@ -196,36 +211,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const lastForUser = user?.id && lastProfileRef.current?.id === user.id
       const isOwnerFallback = lastForUser ? lastIsOwnerRef.current : false
       const planTierFallback = lastForUser ? lastPlanTierRef.current : "essential"
+      const paymentStatusFallback = lastForUser ? lastPaymentStatusRef.current : "active"
 
       let finalProfile = profile
       let finalIsOwner = profileWithClinic?.clinic_id && user?.id ? String(profileWithClinic.clinic?.owner_id ?? "") === String(user.id) : isOwnerFallback
       let finalPlanTier = profileWithClinic?.clinic_id ? normalizePlanTier(profileWithClinic.clinic?.plan_tier ?? planTierFallback) : planTierFallback
+      let finalPaymentStatus = profileWithClinic?.clinic_id ? normalizePaymentStatus(profileWithClinic.clinic?.payment_status ?? paymentStatusFallback) : paymentStatusFallback
 
       if (!finalProfile && user && cached?.profile) {
         finalProfile = cached.profile
         finalIsOwner = cached.isOwner
         finalPlanTier = cached.planTier
+        finalPaymentStatus = cached.paymentStatus
       }
       if (!finalProfile && lastForUser && lastProfileRef.current) {
         finalProfile = lastProfileRef.current
         finalIsOwner = lastIsOwnerRef.current
         finalPlanTier = lastPlanTierRef.current
+        finalPaymentStatus = lastPaymentStatusRef.current
       }
 
       if (!mounted) return
-      setState({ session, user, profile: finalProfile, isOwner: finalIsOwner, planTier: finalPlanTier, loading: false })
+      setState({ session, user, profile: finalProfile, isOwner: finalIsOwner, planTier: finalPlanTier, paymentStatus: finalPaymentStatus, loading: false })
     }
 
     init().catch(() => {
       if (!mounted) return
-      setState({ session: null, user: null, profile: null, isOwner: false, planTier: "essential", loading: false })
+      setState({ session: null, user: null, profile: null, isOwner: false, planTier: "essential", paymentStatus: "active", loading: false })
     })
 
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_OUT") {
         if (!mounted) return
         clearProfileCache()
-        setState({ session: null, user: null, profile: null, isOwner: false, planTier: "essential", loading: false })
+        setState({ session: null, user: null, profile: null, isOwner: false, planTier: "essential", paymentStatus: "active", loading: false })
         return
       }
       const user = session?.user ?? null
@@ -270,8 +289,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           : user && !profileOk && lastProfileRef.current?.id === user.id
             ? lastPlanTierRef.current
             : "essential"
+      const paymentStatus =
+        profileWithClinic?.clinic_id
+          ? normalizePaymentStatus(profileWithClinic.clinic?.payment_status ?? (user && lastProfileRef.current?.id === user.id ? lastPaymentStatusRef.current : "active"))
+          : user && !profileOk && lastProfileRef.current?.id === user.id
+            ? lastPaymentStatusRef.current
+            : "active"
       if (!mounted) return
-      setState({ session, user, profile, isOwner, planTier, loading: false })
+      setState({ session, user, profile, isOwner, planTier, paymentStatus, loading: false })
     })
 
     return () => {
