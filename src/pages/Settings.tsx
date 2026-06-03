@@ -201,7 +201,6 @@ export function SettingsPage() {
         cnpj: cnpj || null,
         whatsapp_confirmation_template: whatsTemplate,
         whatsapp_auto_booking_template: whatsAutoBookingTemplate,
-        plan_tier: isOwner ? plan : undefined,
         booking_enabled: isOwner ? bookingEnabled : undefined,
         booking_slug: isOwner ? (safeSlug || undefined) : undefined,
         booking_window_days: isOwner ? Math.max(1, Math.min(60, Math.trunc(bookingWindowDays))) : undefined,
@@ -284,16 +283,10 @@ export function SettingsPage() {
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
               <Label>Plano atual</Label>
-              <select
-                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                value={plan}
-                onChange={(e) => setPlan(e.target.value as "essential" | "clinic" | "management")}
-              >
-                <option value="essential">Essencial (agenda e pacientes)</option>
-                <option value="clinic">Clínica (prontuário e retornos)</option>
-                <option value="management">Gestão (financeiro e gestão completa)</option>
-              </select>
-              <div className="text-xs text-muted-foreground">A alteração do plano é exclusiva do Titular.</div>
+              <div className="flex h-10 items-center rounded-md border border-input bg-muted/40 px-3 text-sm font-medium">
+                {plan === "management" ? "Gestão (financeiro e gestão completa)" : plan === "clinic" ? "Clínica (prontuário e retornos)" : "Essencial (agenda e pacientes)"}
+              </div>
+              <div className="text-xs text-muted-foreground">O plano é definido pela sua assinatura. Para alterar, gerencie a assinatura na área de cobrança.</div>
             </div>
           </CardContent>
         </Card>

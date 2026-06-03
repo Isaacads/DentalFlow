@@ -259,10 +259,8 @@ export function MedicalRecordPage() {
                 onChange={async (e) => {
                   if (!e.target.files?.length) return
                   try {
-                    const { uploaded, targetRecordId } = await uploadFiles(e.target.files)
+                    const { uploaded } = await uploadFiles(e.target.files)
                     setAttachments((prev) => [...uploaded, ...prev])
-                    if (!record?.id) params.set("record", targetRecordId)
-                    setParams(params, { replace: true })
                     toast.success("Arquivos enviados. Salve o prontuário para registrar os anexos.")
                   } catch {
                     toast.error("Falha no upload.")
