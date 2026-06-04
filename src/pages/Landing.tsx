@@ -28,8 +28,8 @@ const plans = [
       "Até 2 usuários por clínica",
     ],
     highlight: false,
-    cta: "Entrar no sistema",
-    href: "/login",
+    cta: "Comprar",
+    href: "https://pay.kiwify.com.br/H5dS2gh",
   },
   {
     name: "Clínica",
@@ -44,8 +44,8 @@ const plans = [
       "Até 3 usuários por clínica",
     ],
     highlight: true,
-    cta: "Entrar no sistema",
-    href: "/login",
+    cta: "Comprar",
+    href: "https://pay.kiwify.com.br/sFrgbbp",
   },
   {
     name: "Gestão",
@@ -60,8 +60,8 @@ const plans = [
       "Usuários ilimitados por clínica",
     ],
     highlight: false,
-    cta: "Entrar no sistema",
-    href: "/login",
+    cta: "Comprar",
+    href: "https://pay.kiwify.com.br/PcLem1U",
   },
 ]
 
